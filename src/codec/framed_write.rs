@@ -90,7 +90,7 @@ where
         FramedWrite {
             inner,
             encoder: Encoder {
-                hpack: hpack::Encoder::default(),
+                hpack: hpack::Encoder::new(0, 0),
                 buf: Cursor::new(BytesMut::with_capacity(DEFAULT_BUFFER_CAPACITY)),
                 next: None,
                 last_data_frame: None,
