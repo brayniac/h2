@@ -1,11 +1,13 @@
 use super::*;
 
-use indexmap::{self, IndexMap};
+use indexmap::{self};
 
 use std::convert::Infallible;
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops;
+
+type IndexMap<K, V> = indexmap::IndexMap<K, V, ahash::RandomState>;
 
 /// Storage for streams
 #[derive(Debug)]
@@ -83,7 +85,7 @@ impl Store {
     pub fn new() -> Self {
         Store {
             slab: slab::Slab::new(),
-            ids: IndexMap::new(),
+            ids: IndexMap::with_hasher(ahash::RandomState::new()),
         }
     }
 
