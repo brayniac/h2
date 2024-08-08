@@ -209,8 +209,8 @@ fn encode_not_indexed2(name: &[u8], value: &[u8], sensitive: bool, dst: &mut Byt
         dst.put_u8(0);
     }
 
-    encode_str(name, dst);
-    encode_str(value, dst);
+    encode_str_no_huff(name, dst);
+    encode_str_no_huff(value, dst);
 }
 
 fn encode_str(val: &[u8], dst: &mut BytesMut) {
@@ -254,6 +254,21 @@ fn encode_str(val: &[u8], dst: &mut BytesMut) {
                 dst[idx + i] = buf[i];
             }
         }
+    } else {
+        // Write an empty string
+        dst.put_u8(0);
+    }
+}
+
+fn encode_str_no_huff(val: &[u8], dst: &mut BytesMut) {
+    if !val.is_empty() {
+        let idx = position(dst);
+
+        // Push a placeholder byte for the length header
+        dst.put_u8(0);
+
+        dst[idx] = val.len() as u8;
+        dst.put_slice(val);
     } else {
         // Write an empty string
         dst.put_u8(0);
