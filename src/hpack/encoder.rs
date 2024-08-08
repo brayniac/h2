@@ -129,8 +129,8 @@ impl Encoder {
 
                 dst.put_u8(0b0100_0000);
 
-                encode_str(header.name().as_slice(), dst);
-                encode_str(header.value_slice(), dst);
+                encode_str_no_huff(header.name().as_slice(), dst);
+                encode_str_no_huff(header.value_slice(), dst);
             }
             Index::InsertedValue(idx, _) => {
                 let header = self.table.resolve(index);
@@ -138,7 +138,7 @@ impl Encoder {
                 assert!(!header.is_sensitive());
 
                 encode_int(idx, 6, 0b0100_0000, dst);
-                encode_str(header.value_slice(), dst);
+                encode_str_no_huff(header.value_slice(), dst);
             }
             Index::NotIndexed(_) => {
                 let header = self.table.resolve(index);
@@ -199,7 +199,7 @@ fn encode_not_indexed(name: usize, value: &[u8], sensitive: bool, dst: &mut Byte
         encode_int(name, 4, 0, dst);
     }
 
-    encode_str(value, dst);
+    encode_str_no_huff(value, dst);
 }
 
 fn encode_not_indexed2(name: &[u8], value: &[u8], sensitive: bool, dst: &mut BytesMut) {
@@ -213,52 +213,52 @@ fn encode_not_indexed2(name: &[u8], value: &[u8], sensitive: bool, dst: &mut Byt
     encode_str_no_huff(value, dst);
 }
 
-fn encode_str(val: &[u8], dst: &mut BytesMut) {
-    if !val.is_empty() {
-        let idx = position(dst);
+// fn encode_str(val: &[u8], dst: &mut BytesMut) {
+//     if !val.is_empty() {
+//         let idx = position(dst);
 
-        // Push a placeholder byte for the length header
-        dst.put_u8(0);
+//         // Push a placeholder byte for the length header
+//         dst.put_u8(0);
 
-        // Encode with huffman
-        huffman::encode(val, dst);
+//         // Encode with huffman
+//         huffman::encode(val, dst);
 
-        let huff_len = position(dst) - (idx + 1);
+//         let huff_len = position(dst) - (idx + 1);
 
-        if encode_int_one_byte(huff_len, 7) {
-            // Write the string head
-            dst[idx] = 0x80 | huff_len as u8;
-        } else {
-            // Write the head to a placeholder
-            const PLACEHOLDER_LEN: usize = 8;
-            let mut buf = [0u8; PLACEHOLDER_LEN];
+//         if encode_int_one_byte(huff_len, 7) {
+//             // Write the string head
+//             dst[idx] = 0x80 | huff_len as u8;
+//         } else {
+//             // Write the head to a placeholder
+//             const PLACEHOLDER_LEN: usize = 8;
+//             let mut buf = [0u8; PLACEHOLDER_LEN];
 
-            let head_len = {
-                let mut head_dst = &mut buf[..];
-                encode_int(huff_len, 7, 0x80, &mut head_dst);
-                PLACEHOLDER_LEN - head_dst.remaining_mut()
-            };
+//             let head_len = {
+//                 let mut head_dst = &mut buf[..];
+//                 encode_int(huff_len, 7, 0x80, &mut head_dst);
+//                 PLACEHOLDER_LEN - head_dst.remaining_mut()
+//             };
 
-            // This is just done to reserve space in the destination
-            dst.put_slice(&buf[1..head_len]);
+//             // This is just done to reserve space in the destination
+//             dst.put_slice(&buf[1..head_len]);
 
-            // Shift the header forward
-            for i in 0..huff_len {
-                let src_i = idx + 1 + (huff_len - (i + 1));
-                let dst_i = idx + head_len + (huff_len - (i + 1));
-                dst[dst_i] = dst[src_i];
-            }
+//             // Shift the header forward
+//             for i in 0..huff_len {
+//                 let src_i = idx + 1 + (huff_len - (i + 1));
+//                 let dst_i = idx + head_len + (huff_len - (i + 1));
+//                 dst[dst_i] = dst[src_i];
+//             }
 
-            // Copy in the head
-            for i in 0..head_len {
-                dst[idx + i] = buf[i];
-            }
-        }
-    } else {
-        // Write an empty string
-        dst.put_u8(0);
-    }
-}
+//             // Copy in the head
+//             for i in 0..head_len {
+//                 dst[idx + i] = buf[i];
+//             }
+//         }
+//     } else {
+//         // Write an empty string
+//         dst.put_u8(0);
+//     }
+// }
 
 fn encode_str_no_huff(val: &[u8], dst: &mut BytesMut) {
     if !val.is_empty() {

@@ -149,14 +149,14 @@ impl Table {
             return Index::Indexed(n, header);
         }
 
-        Index::new(statik, header)
+        // Index::new(statik, header)
 
-        // // Don't index large headers
-        // if header.len() * 4 > self.max_size * 3 {
-        //     return Index::new(statik, header);
-        // }
+        // Don't index large headers
+        if header.len() * 4 > self.max_size * 3 {
+            return Index::new(statik, header);
+        }
 
-        // self.index_dynamic(header, statik)
+        self.index_dynamic(header, statik)
     }
 
     fn index_dynamic(&mut self, header: Header, statik: Option<(usize, bool)>) -> Index {
