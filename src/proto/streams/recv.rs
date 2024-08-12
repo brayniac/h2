@@ -209,7 +209,7 @@ impl Recv {
                 let mut res = frame::Headers::new(
                     stream.id,
                     frame::Pseudo::response(::http::StatusCode::REQUEST_HEADER_FIELDS_TOO_LARGE),
-                    HeaderMap::new(),
+                    HeaderMap::with_capacity(8),
                 );
                 res.set_end_stream();
                 Err(RecvHeaderBlockError::Oversize(Some(res)))
