@@ -201,7 +201,7 @@ impl Headers {
             stream_id: head.stream_id(),
             stream_dep,
             header_block: HeaderBlock {
-                fields: HeaderMap::with_capacity(8),
+                fields: HeaderMap::new(),
                 field_size: 0,
                 is_over_size: false,
                 pseudo: Pseudo::default(),
@@ -448,7 +448,7 @@ impl PushPromise {
         let frame = PushPromise {
             flags,
             header_block: HeaderBlock {
-                fields: HeaderMap::with_capacity(8),
+                fields: HeaderMap::new(),
                 field_size: 0,
                 is_over_size: false,
                 pseudo: Pseudo::default(),
