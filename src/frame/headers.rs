@@ -201,7 +201,7 @@ impl Headers {
             stream_id: head.stream_id(),
             stream_dep,
             header_block: HeaderBlock {
-                fields: HeaderMap::new(),
+                fields: HeaderMap::with_capacity(8),
                 field_size: 0,
                 is_over_size: false,
                 pseudo: Pseudo::default(),
@@ -937,7 +937,7 @@ impl HeaderBlock {
     }
 
     fn into_encoding(self, encoder: &mut hpack::Encoder) -> EncodingHeaderBlock {
-        let mut hpack = BytesMut::new();
+        let mut hpack = BytesMut::with_capacity(4096);
         let headers = Iter {
             pseudo: Some(self.pseudo),
             fields: self.fields.into_iter(),
