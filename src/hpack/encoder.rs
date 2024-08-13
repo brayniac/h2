@@ -113,6 +113,10 @@ impl Encoder {
     }
 
     fn encode_header(&mut self, index: &Index, dst: &mut BytesMut) {
+        if dst.capacity() < 256 {
+            dst.reserve(4096);
+        }
+
         match *index {
             Index::Indexed(idx, _) => {
                 encode_int(idx, 7, 0x80, dst);
