@@ -850,6 +850,8 @@ impl HeaderBlock {
         let mut malformed = false;
         let mut headers_size = self.calculate_header_list_size();
 
+        self.fields.reserve(8);
+
         macro_rules! set_pseudo {
             ($field:ident, $val:expr) => {{
                 if reg {
@@ -937,7 +939,7 @@ impl HeaderBlock {
     }
 
     fn into_encoding(self, encoder: &mut hpack::Encoder) -> EncodingHeaderBlock {
-        let mut hpack = BytesMut::with_capacity(4096);
+        let mut hpack = BytesMut::with_capacity(1024);
         let headers = Iter {
             pseudo: Some(self.pseudo),
             fields: self.fields.into_iter(),
